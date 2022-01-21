@@ -20,6 +20,13 @@ def change_one_sample(filename, lsb_part=False):
         data[len(data) // 2] += 2
     wavfile.write(filename, samplerate, data)
 
+def crop_some(filename, crop_start=True, crop_end=True):
+    samplerate, data = wavfile.read(filename)
+    if crop_start:
+        data = data[len(data) // 4:]
+    if crop_end:
+        data = data[:- (len(data) // 4)]
+    wavfile.write(filename, samplerate, data)
 
 if __name__ == '__main__':
     with open('keys/Alice_private_key.pem','r') as f:
@@ -37,6 +44,8 @@ if __name__ == '__main__':
     v = WaveVerifier(public_key)
     # Uncomment this next line to see what happens when the verification fails!
     # change_one_sample(signed_file, lsb_part=True)
+    # trim the start and end of the file
+    crop_some(signed_file)
     print('verifying')
     result = v.verify(signed_file)
     if result:
