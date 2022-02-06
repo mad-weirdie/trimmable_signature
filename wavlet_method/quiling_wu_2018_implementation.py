@@ -7,13 +7,13 @@ import numpy as np
 from scipy.io import wavfile
 import pywt
 from PIL import Image
-from tqdm import tqdm
+from tqdm import trange
 import matplotlib.pyplot as plt
 from scipy.fftpack import dct, idct
 
 R_DWT_LEVEL = 4
-N_SEGMENT_LENGTH = 1024
-LAMBDA_EMBEDDING_DEPTH = 0.9
+N_SEGMENT_LENGTH = 256
+LAMBDA_EMBEDDING_DEPTH = 0.5
 
 def make_watermark_from_image():
     im_frame = Image.open('433_watermark_image.png')
@@ -25,12 +25,16 @@ def make_watermark_from_image():
     single_channel //= single_channel.max()
     return single_channel.shape, single_channel.flatten()
 
-def insert_watermark(audio, mark):
+def insert_watermark(audio, mark, show_progress_bar=False):
+    if show_progress_bar:
+        rangefun = trange
+    else:
+        rangefun = range
     old_dtype = audio.dtype
     audio = audio.astype(np.float64)
     watermarked_audio = audio.copy()
     mark_index = 0
-    for sample_start in tqdm(range(0, len(audio) - N_SEGMENT_LENGTH, N_SEGMENT_LENGTH)):
+    for sample_start in rangefun(0, len(audio) - N_SEGMENT_LENGTH, N_SEGMENT_LENGTH):
         segment = audio[sample_start:sample_start + N_SEGMENT_LENGTH].copy()
         coeffs = pywt.wavedec(segment, 'db4', level=R_DWT_LEVEL)
         coeff_to_use = coeffs[1] # First detail level coefficient
@@ -69,11 +73,15 @@ def insert_watermark(audio, mark):
     return watermarked_audio.astype(old_dtype)
 
 
-def blind_read_watermark(audio, watermark_dimensions):
+def blind_read_watermark(audio, watermark_dimensions, show_progress_bar=False):
+    if show_progress_bar:
+        rangefun = trange
+    else:
+        rangefun = range
     audio = audio.astype(np.float64)
     watermark = np.zeros(watermark_dimensions).flatten()
     mark_index = 0
-    for sample_start in tqdm(range(0, len(audio) - N_SEGMENT_LENGTH, N_SEGMENT_LENGTH)):
+    for sample_start in rangefun(0, len(audio) - N_SEGMENT_LENGTH, N_SEGMENT_LENGTH):
         segment = audio[sample_start:sample_start + N_SEGMENT_LENGTH].copy()
         coeffs = pywt.wavedec(segment, 'db4', level=R_DWT_LEVEL)
         coeff_to_use = coeffs[1]  # First detail level coefficient
