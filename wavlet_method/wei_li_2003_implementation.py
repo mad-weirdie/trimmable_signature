@@ -10,12 +10,13 @@ from PIL import Image
 from tqdm import tqdm
 import matplotlib.pyplot as plt
 
+
 def make_watermark_from_image():
     im_frame = Image.open('433_watermark_image.png')
     np_frame = np.array(im_frame)
     # np_frame has rgba channels, we just want a single channel, so we take the
     # r channel.
-    single_channel = np_frame[...,0]
+    single_channel = np_frame[..., 0]
     # Channel is 8-bit (0-255), we want 1 bit instead.
     single_channel //= single_channel.max()
     return single_channel.shape, single_channel.flatten()
@@ -24,14 +25,16 @@ def make_watermark_from_image():
 FRAME_SIZE = 2048
 OVERLAP_SIZE = int(FRAME_SIZE * 0.75)
 
+
 def hamming_window_mask(length):
     # The hamming window funciton is a cosine wave that starts at a bit more
     # than 0, grows to 1, and then returns to the starting value over the
     # course of the array.
 
     # length: length of the array to create.
-    mask = np.arange(0,2 * np.pi,2 * np.pi / length)
+    mask = np.arange(0, 2 * np.pi, 2 * np.pi / length)
     return 0.54 - 0.46 * np.cos(mask)
+
 
 def repeat_mark(mark):
     new_mark = []
@@ -47,9 +50,10 @@ def insert_watermark(audio, mark):
     mark = repeat_mark(mark)
     audio = audio.astype(np.float64)
     watermarked_audio = audio.copy()
-    watermarked_audio[:] = 0 # Zero out whole array, while preserving shape
+    watermarked_audio[:] = 0  # Zero out whole array, while preserving shape
     mark_index = 0
-    for sample_start in tqdm(range(0, len(audio) - FRAME_SIZE, FRAME_SIZE - OVERLAP_SIZE)):
+    for sample_start in tqdm(
+            range(0, len(audio) - FRAME_SIZE, FRAME_SIZE - OVERLAP_SIZE)):
         frame = audio[sample_start:sample_start + FRAME_SIZE].copy()
         frame *= hamming_window_mask(len(frame))
         # We preform a 3-level wavelet decomposition using the db4 wavelet
@@ -67,7 +71,8 @@ def insert_watermark(audio, mark):
             else:
                 raise ValueError("watermark must be an array of only 1 and 0")
         watermarked_frame = pywt.waverec(coeffs, 'db4')
-        watermarked_audio[sample_start:sample_start + FRAME_SIZE] += watermarked_frame
+        watermarked_audio[
+        sample_start:sample_start + FRAME_SIZE] += watermarked_frame
 
         mark_index += 1
         if mark_index == len(mark):
@@ -77,13 +82,14 @@ def insert_watermark(audio, mark):
     print(max(watermarked_audio))
     return watermarked_audio.astype(old_dtype)
 
+
 def blind_read_watermark(audio, watermark_dimensions):
     audio = audio.astype(np.float64)
     watermark_segment = []
     watermark = np.zeros(watermark_dimensions).flatten()
     index = 0
     for sample_start in tqdm(range(0, len(audio) - FRAME_SIZE,
-                              FRAME_SIZE - OVERLAP_SIZE)):
+                                   FRAME_SIZE - OVERLAP_SIZE)):
         frame = audio[sample_start:sample_start + FRAME_SIZE].copy()
         frame *= hamming_window_mask(len(frame))
         # We preform a 3-level wavelet decomposition using the db4 wavelet
@@ -102,6 +108,7 @@ def blind_read_watermark(audio, watermark_dimensions):
                 break
     watermark = watermark.reshape(watermark_dimensions)
     return watermark
+
 
 dimensions, mark = make_watermark_from_image()
 
