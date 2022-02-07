@@ -16,7 +16,7 @@ N_SEGMENT_LENGTH = 256
 LAMBDA_EMBEDDING_DEPTH = 0.5
 
 def make_watermark_from_image():
-    im_frame = Image.open('433_watermark_image.png')
+    im_frame = Image.open('../watermarks/433_watermark_image.png')
     np_frame = np.array(im_frame)
     # np_frame has rgba channels, we just want a single channel, so we take the
     # r channel.
@@ -26,6 +26,7 @@ def make_watermark_from_image():
     return single_channel.shape, single_channel.flatten()
 
 def insert_watermark(audio, mark, show_progress_bar=False):
+    dimensions, mark = make_watermark_from_image()
     if show_progress_bar:
         rangefun = trange
     else:

@@ -29,14 +29,14 @@ def crop_some(filename, crop_start=True, crop_end=True):
     wavfile.write(filename, samplerate, data)
 
 if __name__ == '__main__':
-    with open('keys/Alice_private_key.pem','r') as f:
+    with open('../keys/Alice_private_key.pem','r') as f:
         private_key = f.read()
 
-    with open('keys/Alice_public_key.pem','r') as f:
+    with open('../keys/Alice_public_key.pem','r') as f:
         public_key = f.read()
 
-    original_file = 'audio_samples/half_second_tone.wav'
-    signed_file = 'tone_s.wav'
+    original_file = '../audio_samples/half_second_tone.wav'
+    signed_file = '../tone_s.wav'
 
     s = WaveSigner(private_key)
     print('signing')

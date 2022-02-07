@@ -1,0 +1,3 @@
+Description: This file contains the names of the audio files the EvaluateWatermarkMethods attack-tester should check.
+half_second_tone.wav
+monkeys_mono.wav
